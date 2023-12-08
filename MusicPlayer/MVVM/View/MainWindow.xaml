@@ -1,0 +1,237 @@
+﻿<Window x:Class="MusicPlayer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewmodel="clr-namespace:MusicPlayer.MVVM.ViewModel"
+        xmlns:local="clr-namespace:MusicPlayer"
+        xmlns:core="clr-namespace:MusicPlayer.Core"
+        xmlns:model="clr-namespace:MusicPlayer.MVVM.Model"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="300"
+        WindowStyle="None"
+        Background="Transparent"
+        AllowsTransparency="True"
+        ResizeMode="NoResize"
+        PreviewDragOver="Window_PreviewDragOver"
+        Drop="Window_Drop"
+        AllowDrop="True">
+
+    <Window.DataContext>
+        <viewmodel:MainViewModel/>
+    </Window.DataContext>
+    <Window.Resources>
+        <Style TargetType="{x:Type ListViewItem}">
+            <Setter Property="IsSelected" 
+                    Value="{Binding IsSelected}"/>
+            
+            <Setter Property="Foreground"
+                    Value="White"/>
+        </Style>
+    </Window.Resources>
+    
+    <DockPanel Background="#1e1e1e"
+               Margin="7">
+        
+        <Border Height="28"
+                Background="#252525"
+                DockPanel.Dock="Top">
+
+            <Border.InputBindings>
+                <MouseBinding MouseAction="LeftClick"
+                   Command="{Binding MoveWindowCommand}"/>
+            </Border.InputBindings>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="100"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Music Player"
+                       Foreground="White"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Margin="100,0,0,0"/>
+                
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            Margin="0,0,4,0">
+                    
+                    <Button Content="🗕"
+                            Padding="0,0,0,6"
+                            Command="{Binding MinimizeWindowCommand}"
+                            Style="{StaticResource MinimizeButtonStyle}"/>
+                    
+                    <Button Content="🗙"
+                            Padding="0,0,0,2"
+                            Command="{Binding ShutdownCommand}"
+                            Style="{StaticResource ShutDownButtonStyle}"/> 
+                    
+                </StackPanel>
+            </Grid>
+
+        </Border>
+        <Border x:Name="PlayListMenu"
+                Width="20"
+                HorizontalAlignment="Left"
+                Background="#252525">
+
+            <Border.Style>
+                <Style>
+                    <Style.Triggers>
+                        <EventTrigger RoutedEvent="Border.MouseEnter">
+                            <EventTrigger.Actions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="(Border.Width)"
+                                                 To="120"
+                                                 Duration="0:0:.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger.Actions>
+                        </EventTrigger>
+
+                        <EventTrigger RoutedEvent="Border.MouseLeave">
+                            <EventTrigger.Actions>
+                                
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="(Border.Width)"
+                                                 To="20"
+                                                 Duration="0:0:.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger.Actions>
+                        </EventTrigger>
+
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+
+            <StackPanel>
+                <ListView x:Name="listView"
+                          core:DragAndDropBehavior.IsEnabled="true"
+                          core:DragAndDropBehavior.Type="{x:Type model:PlayItem}"
+                          ItemsSource="{Binding Setting.PlayList}"
+                          MouseDoubleClick="ListViewItem_DoubleClick"
+                          Width="120"
+                          Height="380"
+                          Margin="0,20,0,0"
+                          Background="Transparent"
+                          Foreground="White"
+                          BorderThickness="0"
+                          ScrollViewer.CanContentScroll="False">
+                </ListView>
+
+            </StackPanel>
+        </Border>
+        <Border>
+            <StackPanel>
+                <Button x:Name="OpenPlayList" Style="{StaticResource ActionButtonStyle}"
+                        Command="{Binding OpenFileCommand}"
+                        HorizontalAlignment="Left"
+                        Margin="10,10,0,0"
+                        ToolTip="Open Play List">
+                    
+                    <StackPanel Margin="-5">
+                        <materialDesign:PackIcon Kind="Folder" Width="20" Height="20"/>
+                    </StackPanel>
+                </Button>
+
+                <StackPanel HorizontalAlignment="Center"
+                            Margin="0,50,0,0">
+                    
+                    <materialDesign:PackIcon Kind="Music" Foreground="White" Width="90" Height="90"/>
+                </StackPanel>
+                
+                <TextBlock x:Name="FileNameTextBlock"
+                           HorizontalAlignment="Center" 
+                           Text="{Binding Player.CurrentItem.Title}"
+                           Foreground="White"
+                           FontWeight="SemiBold"
+                           FontSize="19"/>
+                <Grid>
+                    <TextBlock 
+                               FontSize="11"
+                               Text="{Binding Player.Position, StringFormat=⠀{0:mm\\:ss}⠀}"
+                               Margin="20 0"
+                               Foreground="White"
+                               FontWeight="ExtraLight"
+                               TextAlignment="Center"
+                               HorizontalAlignment="Left"/>
+
+                    <TextBlock x:Name="MusicLength"
+                               FontSize="11"
+                               Text="{Binding Player.NaturalDuration.TimeSpan,  StringFormat=⠀{0:mm\\:ss}⠀}"
+                               Margin="20 0"
+                               Foreground="White"
+                               FontWeight="ExtraLight"
+                               TextAlignment="Center"
+                               HorizontalAlignment="Right"/>
+                </Grid>
+
+                <Slider Minimum="0"
+                        x:Name="SliderProgress"
+                        Margin="20 0"
+                        Foreground="White"
+                        Maximum="{Binding Player.NaturalDuration.TimeSpan.TotalSeconds, Mode=OneWay}"
+                        Value="{Binding Player.Position.TotalSeconds, Mode=OneWay}"
+                        ValueChanged="Slider_ValueChanged"/>
+                <WrapPanel HorizontalAlignment="Center"
+                           Margin="0 30">
+                    <Button x:Name="PlayPreviousButton" 
+                            Style="{StaticResource ActionButtonStyle}"
+                            HorizontalAlignment="Right"
+                            Margin="10 0"
+                            Command="{Binding Player.PreviousCommand}">
+
+                        <StackPanel Margin="-5">
+                            <materialDesign:PackIcon Kind="FastRewind"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="PlayButton" 
+                            Style="{StaticResource ActionButtonStyle}"
+                            HorizontalAlignment="Right"
+                            Margin="10 0"
+                            Command="{Binding Player.PlayPauseCommand}"> 
+                        <StackPanel Margin="-5">
+                            <materialDesign:PackIcon Kind="Play"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="PlayNextButton" 
+                            Style="{StaticResource ActionButtonStyle}"
+                            HorizontalAlignment="Right"
+                            Margin="10 0"
+                            Command="{Binding Player.NextCommand}">
+                        <StackPanel Margin="-5">
+                            <materialDesign:PackIcon Kind="FastForward"/>
+                        </StackPanel>
+                    </Button>
+
+                </WrapPanel>
+                <Grid>
+                    <StackPanel Margin="20 0"
+                                HorizontalAlignment="Left">
+                        <materialDesign:PackIcon Kind="Mute" Foreground="White"/>
+                    </StackPanel>
+                    
+                    <StackPanel Margin="20 0"
+                                HorizontalAlignment="Right">
+                        <materialDesign:PackIcon Kind="VolumeHigh" Foreground="White"/>
+                    </StackPanel>
+                </Grid>
+
+                <Slider x:Name="VolumeSlider"
+                        LargeChange="0.1"
+                        Maximum="1"
+                        SmallChange="0.01"
+                        Value="{Binding Player.Volume}"
+                        Margin="20 0"
+                        Foreground="White"/>
+            </StackPanel>
+        </Border>
+    </DockPanel>
+</Window>
